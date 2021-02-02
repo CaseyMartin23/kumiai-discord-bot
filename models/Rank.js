@@ -5,12 +5,10 @@ const Rank = new mongoose.Schema({
     type: String,
   },
   pointsRequired: {
-    type: String,
-    default: 0
+    type: Number,
   },
   roleId: {
-    type: Boolean,
-    default: 0
+    type: String,
   }
 });
 

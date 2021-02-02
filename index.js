@@ -1,20 +1,32 @@
 require("dotenv").config();
 var CronJob = require('cron').CronJob;
 
-const { Client, WebhookClient } = require('discord.js');
-const Rank = require("./models/Rank");
-const User = require("./models/User");
+const { Client } = require('discord.js');
 
 const client = new Client({
   partials: ['MESSAGE', 'REACTION']
 });
 
-const webhookClient = new WebhookClient(
-  process.env.WEBHOOK_ID,
-  process.env.WEBHOOK_TOKEN,
-);
-
 const PREFIX = "!";
+
+// mognodb config
+const mongoose = require('mongoose');
+(async function () {
+  try {
+    const conn = await mongoose.connect(process.env.MONGO_URI, {
+      useUnifiedTopology: true,
+      useNewUrlParser: true,
+      useCreateIndex: true,
+    })
+  
+    console.log(`MongoDB Connected: ${conn.connection.host}`)
+  } catch (error) {
+    console.error(`Error: ${error.message}`)
+    process.exit(1)
+  }
+}())
+const Rank = require("./models/Rank");
+const User = require("./models/User");
 
 client.on('ready', () => {
   console.log(`${client.user.tag} has logged in.`);
@@ -30,7 +42,11 @@ client.on('message', async (message) => {
       .trim()
       .substring(PREFIX.length)
       .split(/\s+/);
+
     if (CMD_NAME === 'rank' && args[0] === '-a') {
+      if (!message.content.includes('r:') || !message.content.includes('p:') || !message.content.includes('i:')) 
+        return await message.channel.send(`Hmm you don't have everything for me to create a rank.`)
+
       var rankStartingIndex = message.content.indexOf('r:');
       var idStartingIndex = message.content.indexOf('i:');
       var pointsStartingIndex = message.content.indexOf('p:');
@@ -51,7 +67,7 @@ client.on('message', async (message) => {
 
       var rank = await Rank.findOne({ rankName: rankName });
       if (rank) {
-        rank.points = points;
+        rank.pointsRequired = points;
         rank.roleId = id;
         await rank.save();
         return await message.channel.send(`${rankName} has been updated.`);
