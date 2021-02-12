@@ -1,0 +1,9 @@
+---------------------------------------
+Quest completion
+
+- Once user does a questable action, start the UserQuest based on the corresponding system quest.
+- If the system quest doesn't exist, create it. If it exists, update the existing user quest.
+- If the user had not yet hit the successcounter, continue.
+    Else, add quest completion to the user model, delete user quest and dm the user about the completion of their quest.
+
+---------------------------------------

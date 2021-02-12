@@ -25,12 +25,21 @@ const mongoose = require('mongoose');
     process.exit(1)
   }
 }())
+
 const Rank = require("./models/Rank");
 const User = require("./models/User");
+const Achievement = require("./models/Achievement");
+const QuestTemplate = require("./models/QuestTemplate");
+const QuestInProgress = require("./models/QuestInProgress");
 
 client.on('ready', () => {
   console.log(`${client.user.tag} has logged in.`);
 });
+
+async function createDbUser (userId) {
+  const user = await User.create({ discordId: userId });
+  return user;
+}
 
 var chatAuthorIds = [];
 var streamAuthorIds = {};
@@ -87,6 +96,18 @@ client.on('message', async (message) => {
     } 
   }
   else {
+      const isSpecific = await Achievement.find({ name: message.content, channelId: message.channel.id.toString() });
+      if (isSpecific.length > 0) {
+          // ACHIEVEMENT: User sends a specific message in a specific channel
+          var user = await User.findOne({ discordId: packet.d.user_id });
+          if (!user) user = await createDbUser(packet.d.user_id);
+          user.completedAchievements = [...user.completedAchievements, isSpecific.id];
+          await user.save();
+          const member = await client.guilds.cache.get(process.env.guildId).members.fetch(packet.d.user_id);
+          if (!member) return;
+          await member.send('Voice channel achievement unlocked.');
+      }
+
       // add author id to array here
       var authorExists = chatAuthorIds.find((a) => a === message.author.id.toString());
       if (authorExists) return;
@@ -96,7 +117,17 @@ client.on('message', async (message) => {
 
 client.on('raw', packet => {
   if (packet.t === 'VOICE_STATE_UPDATE') {
-    if (!streamAuthorIds[packet.d.user_id] && !packet.d.self_stream) streamAuthorIds[packet.d.user_id] = false; // user just enters channel
+    if (!streamAuthorIds[packet.d.user_id] && !packet.d.self_stream) { // user just enters channel
+      // ACHIEVEMENT: User joinds vc for the first time.
+      const achievement = await Achievement.findOne({ type: 'vc' });
+      var user = await User.findOne({ discordId: packet.d.user_id });
+      if (!user) user = await createDbUser(packet.d.user_id);
+      user.completedAchievements = [...user.completedAchievements, achievement.id];
+      await user.save();
+      const member = await client.guilds.cache.get(process.env.guildId).members.fetch(packet.d.user_id);
+      if (!member) return;
+      await member.send('Voice channel achievement unlocked.');
+    }
     else if ((streamAuthorIds[packet.d.user_id] === false || !streamAuthorIds[packet.d.user_id]) && packet.d.self_stream === true) streamAuthorIds[packet.d.user_id] = true; // if the user starts streaming
     console.log(streamAuthorIds);
   }
@@ -181,5 +212,33 @@ client.login(process.env.DISCORDJS_BOT_TOKEN).then(() => {
       //   await grantRolesFromPoints();
 
       // }, null, true, 'America/Toronto');
+
+        new CronJob('0 */5 * * * *', async function() {
+      console.log("Checking to see if any users have completed all of their quests...");
+
+      async function grantAchievementFromQuests () {
+        console.log(process.env.guildId);
+        var achievement = await Achievement.findOne({ type: 'all' });
+        if (!achievement) return console.log("Couldn't find all quests completed achievement.");
+
+        var quests = await QuestTemplate.find();
+        if (!quests || quests.length === 0) return console.log('No quests.')
+
+        var users = await User.find();
+        if (!users || users.length === 0) return console.log('No users.')
+
+        for (var u of users) {
+          if (u && u.completedQuests && u.completedQuests.length === quests.length) {
+            u.completedAchievements = [...u.completedAchievements, achievement.id];
+            await u.save();
+            console.log(u.id + "has completed all the quests.");
+            // const member = await 
+          }
+        }
+      }
+
+      await grantAchievementFromQuests();
+
+    }, null, true, 'America/Toronto');
 
 })

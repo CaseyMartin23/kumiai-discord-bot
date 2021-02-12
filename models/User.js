@@ -12,6 +12,18 @@ const User = new mongoose.Schema({
     type: Boolean,
     default: 0
   },
+  completedQuests: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'QuestTemplate',
+    }
+  ],
+  completedAchievements: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Achievement',
+    }
+  ],
   created: {
     type: Date,
     default: Date.now,
