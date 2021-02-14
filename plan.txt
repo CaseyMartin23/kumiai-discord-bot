@@ -15,12 +15,12 @@ Tasks for bot
  - XP multiplier (web portal)
  - Coins and points should be synced (coins can be spent, points can't)
  - Types of quests:
- - Chat for a number of minutes in a specific channel
- - Send a number of images in a specific channel. 
- - React a number of times to specific messages
- - Ping a user with a unique message or emoticon
+ - Chat for a number of minutes in a specific channel : ip
+ - Send a number of images in a specific channel. : ip
+ - React a number of times to specific messages: Need more clarification on this
+ - Ping a user with a unique message or emoticon : Can't be done through bot
 
 Types of Achievements:
- - All previous types of quest 
- - Send specific message to a specific channel
- - Join a vc for the first time
+ - All previous types of quest : ip
+ - Send specific message to a specific channel : ip
+ - Join a vc for the first time : ip

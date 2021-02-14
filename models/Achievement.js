@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const Achievement = new mongoose.Schema({
-    name : {
+    name: {
         type: String
     },
     type: {
@@ -10,8 +10,12 @@ const Achievement = new mongoose.Schema({
     channelId: {
         type: String
     },
-    successCounter: {
-        type: Number
+    message: {
+        type: String
+    },
+    points: {
+        type: Number,
+        default: 0
     }
 })
 

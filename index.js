@@ -42,8 +42,12 @@ async function createDbUser (userId) {
   return user;
 }
 
+// passive points for chatting
 var chatAuthorIds = [];
+// passive points for streaming
 var streamAuthorIds = {};
+// passive recording for chatInChannel quest
+var chatInChannel = {};
 
 client.on('message', async (message) => {
   if (message.author.bot) return;
@@ -103,22 +107,54 @@ client.on('message', async (message) => {
         attachementType = attachementType.substr(attachementType.length - 5);
         if (!attachementType.includes('.png') && !attachementType.includes('.jpeg') && !attachementType.includes('.jpg')) return;
 
+        var user = await User.findOne({ discordId: message.author.id.toString() });
+        if (!user) user = await createDbUser(message.author.id.toString());
+
+        var questTemplate = await QuestTemplate.findOne({ type: 'image' });
         var questInProgress = await QuestInProgress.findOne({ discordId: message.author.id.toString(), type: 'image' });
+        if (!questInProgress) questInProgress = await QuestInProgress.create({ discordId: message.author.id.toString(), type: 'image', counter: 1 });
+        else questInProgress.counter = questInProgress.counter + 1;
+        if (questInProgress.counter === questTemplate.successCounter) {
+          await questInProgress.remove();
+          user.completedQuests = [...user.completedQuests, questTemplate.id];
+          await user.save();
+          
+          const member = await client.guilds.cache.get(process.env.guildId).members.fetch(message);
+          if (!member) return console.log("Couln't find member for image quest on discord.");
+          await member.send(`You've completed the quest ${questTemplate.name}`);
+        }
+        else await questInProgress.save()
       }
 
-      var isSpecific = await Achievement.findOne({ name: message.content, channelId: message.channel.id.toString() });
+      var isSpecific = await Achievement.findOne({ message: message.content, channelId: message.channel.id.toString() });
+      var quest = await QuestTemplate.findOne({ channelId: message.channel.id.toString(), type: "message-in-channel" });
+
       if (isSpecific) {
           // ACHIEVEMENT: User sends a specific message in a specific channel
           var user = await User.findOne({ discordId: message.author.id.toString() });
           if (!user) user = await createDbUser(message.author.id.toString());
           user.completedAchievements = [...user.completedAchievements, isSpecific.id];
+          user.points = user.points + isSpecific.points;
           await user.save();
           const member = await client.guilds.cache.get(process.env.guildId).members.fetch(message.author.id.toString());
           if (!member) return;
           await member.send('Specific channel achievement unlocked.');
       }
 
-      // add author id to array here
+      // chat in channel quest
+      if (message.channel.id.toString() === process.env.chatInChannelQuest) {
+        var quest = await QuestTemplate.findOne({ channelId: process.env.chatInChannelQuest, type: "message-in-channel" });
+        if (!quest) return console.log("Couldn't find message in channel quest.");
+        
+        var messageAtInMinutes = Math.round(message.createdTimestamp / parseInt(quest.message));
+        if (!chatInChannel[message.author.id.toString()]) chatInChannel[message.author.id.toString()] = [messageAtInSeconds];
+        else if (chatInChannel[message.author.id.toString()].isArray()){ // if quest not completed yet
+          var intervalExists = (chatInChannel[message.author.id.toString()]).find((t) => t === messageAtInMinutes);
+          if (!intervalExists) chatInChannel[message.author.id.toString()] = [...chatInChannel[message.author.id.toString()], messageAtInMinutes];
+        }
+      }
+
+      // add author id to array here for passive points (every min)
       var authorExists = chatAuthorIds.find((a) => a === message.author.id.toString());
       if (authorExists) return;
       return chatAuthorIds.push(message.author.id.toString());
@@ -192,6 +228,29 @@ client.login(process.env.DISCORDJS_BOT_TOKEN).then(() => {
         }
 
         await grantStreamPoints();
+
+      }, null, true, 'America/Toronto');
+
+      new CronJob('*/10 * * * * *', async function() {
+        console.log("Checking quest completion for users who've been chatting in a specific chanenl...");
+        var chatInChannelCopy = {...chatInChannel};
+        chatInChannel = {};
+
+        // async function grantStreamPoints () {
+        //   for (var key of Object.keys(streamAuthorIdsCopy)) {
+        //     if (streamAuthorIdsCopy[key] === true) {
+        //       var user = await User.findOne({ discordId: key });
+        //       if (!user) user = await User.create({ discordId: a, points: 100 });
+        //       else {
+        //         user.points = user.points + 100;
+        //         user.coins = user.coins + 100;
+        //         await user.save();
+        //       }
+        //     }
+        //   }
+        // }
+
+        // await grantStreamPoints();
 
       }, null, true, 'America/Toronto');
 

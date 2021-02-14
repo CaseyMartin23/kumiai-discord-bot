@@ -1,10 +1,19 @@
 [
     {
         "name": "joned voice channel",
-        "type": "vc"
+        "type": "vc",
+        "points": 10
     },
     {
         "name": "all quests completed",
-        "type": "all"
+        "type": "all",
+        "points": 10
+    },
+    {
+        "name": "sent message in a specific channel",
+        "type": "message",
+        "message": "hello world",
+        "channelId": "789075795263356941",
+        "points": 10
     }
 ]

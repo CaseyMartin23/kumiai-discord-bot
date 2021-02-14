@@ -3,11 +3,5 @@
         "name": "Image quest",
         "successCounter": 2,
         "type": "image"
-    },
-    {
-        "name": "send message to user quest",
-        "type": "message",
-        "userId": "762673454204846110", 
-        "message": "hello world"
     }
 ]
