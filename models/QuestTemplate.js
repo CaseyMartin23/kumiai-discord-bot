@@ -1,10 +1,13 @@
 const mongoose = require('mongoose');
 
 const QuestTemplate = new mongoose.Schema({
-    name : {
+    name: {
         type: String
     },
     type: {
+        type: String
+    },
+    userId: {
         type: String
     },
     channelId: {
@@ -12,6 +15,9 @@ const QuestTemplate = new mongoose.Schema({
     },
     successCounter: {
         type: Number
+    }, 
+    message: {
+        type: String
     }
 })
 

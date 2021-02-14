@@ -7,3 +7,20 @@ Quest completion
     Else, add quest completion to the user model, delete user quest and dm the user about the completion of their quest.
 
 ---------------------------------------
+
+Tasks for bot
+ - Create ranks for users (assign on discord, manage through portal)
+ - Chatting on discord award (1-5 pts every mn)
+ - Login to the website daily (10 pts)
+ - XP multiplier (web portal)
+ - Coins and points should be synced (coins can be spent, points can't)
+ - Types of quests:
+ - Chat for a number of minutes in a specific channel
+ - Send a number of images in a specific channel. 
+ - React a number of times to specific messages
+ - Ping a user with a unique message or emoticon
+
+Types of Achievements:
+ - All previous types of quest 
+ - Send specific message to a specific channel
+ - Join a vc for the first time

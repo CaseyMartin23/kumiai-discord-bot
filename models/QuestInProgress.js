@@ -1,7 +1,10 @@
 const mongoose = require('mongoose');
 
 const QuestInProgress = new mongoose.Schema({
-    systemQuestId : {
+    discordId: {
+        type: String
+    },
+    type : {
         type: String
     },
     counter: {

@@ -1,0 +1,10 @@
+[
+    {
+        "name": "joned voice channel",
+        "type": "vc"
+    },
+    {
+        "name": "all quests completed",
+        "type": "all"
+    }
+]

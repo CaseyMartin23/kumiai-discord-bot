@@ -38,6 +38,7 @@ client.on('ready', () => {
 
 async function createDbUser (userId) {
   const user = await User.create({ discordId: userId });
+  user.completedAchievements = [];
   return user;
 }
 
@@ -96,16 +97,25 @@ client.on('message', async (message) => {
     } 
   }
   else {
-      const isSpecific = await Achievement.find({ name: message.content, channelId: message.channel.id.toString() });
-      if (isSpecific.length > 0) {
+      if (message.attachments && message.attachments.values().next().value !== undefined) {
+        var attachementUrlArr = message.attachments.values().next().value.attachment.split('/');
+        var attachementType = attachementUrlArr[attachementUrlArr.length - 1];
+        attachementType = attachementType.substr(attachementType.length - 5);
+        if (!attachementType.includes('.png') && !attachementType.includes('.jpeg') && !attachementType.includes('.jpg')) return;
+
+        var questInProgress = await QuestInProgress.findOne({ discordId: message.author.id.toString(), type: 'image' });
+      }
+
+      var isSpecific = await Achievement.findOne({ name: message.content, channelId: message.channel.id.toString() });
+      if (isSpecific) {
           // ACHIEVEMENT: User sends a specific message in a specific channel
-          var user = await User.findOne({ discordId: packet.d.user_id });
-          if (!user) user = await createDbUser(packet.d.user_id);
+          var user = await User.findOne({ discordId: message.author.id.toString() });
+          if (!user) user = await createDbUser(message.author.id.toString());
           user.completedAchievements = [...user.completedAchievements, isSpecific.id];
           await user.save();
-          const member = await client.guilds.cache.get(process.env.guildId).members.fetch(packet.d.user_id);
+          const member = await client.guilds.cache.get(process.env.guildId).members.fetch(message.author.id.toString());
           if (!member) return;
-          await member.send('Voice channel achievement unlocked.');
+          await member.send('Specific channel achievement unlocked.');
       }
 
       // add author id to array here
@@ -115,13 +125,18 @@ client.on('message', async (message) => {
   }
 });
 
-client.on('raw', packet => {
+client.on('raw', async (packet) => {
   if (packet.t === 'VOICE_STATE_UPDATE') {
     if (!streamAuthorIds[packet.d.user_id] && !packet.d.self_stream) { // user just enters channel
       // ACHIEVEMENT: User joinds vc for the first time.
       const achievement = await Achievement.findOne({ type: 'vc' });
+      if (!achievement) return;
       var user = await User.findOne({ discordId: packet.d.user_id });
       if (!user) user = await createDbUser(packet.d.user_id);
+
+      var achievementExists = user.completedAchievements.find((a) => a.toString() === achievement.id.toString());
+      if (achievementExists) return;
+
       user.completedAchievements = [...user.completedAchievements, achievement.id];
       await user.save();
       const member = await client.guilds.cache.get(process.env.guildId).members.fetch(packet.d.user_id);
@@ -135,51 +150,50 @@ client.on('raw', packet => {
 
 client.login(process.env.DISCORDJS_BOT_TOKEN).then(() => {
     // run cron job to assign points and empty array
+    new CronJob('*/10 * * * * *', async function() {
+      console.log("Granting points to users who've been chatting...");
+        var chatAuthorIdsCopy = [...chatAuthorIds];
+        chatAuthorIds = [];
 
-    // new CronJob('* * * * * *', async function() {
-    //   console.log("Granting points to users who've been chatting...");
-    //     var chatAuthorIdsCopy = [...chatAuthorIds];
-    //     chatAuthorIds = [];
+        async function grantChatPoints () {
+          for (var a of chatAuthorIdsCopy) {
+            var statIncrease = Math.floor(Math.random() * (5 - 1 + 1)) + 1; // Random number between 1 (inclusive) and 5 (inclusive)
+            var user = await User.findOne({ discordId: a });
+            if (!user) user = await User.create({ discordId: a, points: statIncrease });
+            else {
+              user.points = user.points + statIncrease;
+              user.coins = user.coins + statIncrease;
+              await user.save();
+            }
+          }
+        }
 
-    //     async function grantChatPoints () {
-    //       for (var a of chatAuthorIdsCopy) {
-    //         var statIncrease = Math.floor(Math.random() * (5 - 1 + 1)) + 1; // Random number between 1 (inclusive) and 5 (inclusive)
-    //         var user = await User.findOne({ discordId: a });
-    //         if (!user) user = await User.create({ discordId: a, points: statIncrease });
-    //         else {
-    //           user.points = user.points + statIncrease;
-    //           user.coins = user.coins + statIncrease;
-    //           await user.save();
-    //         }
-    //       }
-    //     }
+        await grantChatPoints();
 
-    //     await grantChatPoints();
+      }, null, true, 'America/Toronto');
 
-    //   }, null, true, 'America/Toronto');
+      new CronJob('*/10 * * * * *', async function() {
+        console.log("Granting points to users who've been streaming...");
+        var streamAuthorIdsCopy = {...streamAuthorIds};
+        streamAuthorIds = {};
 
-    //   new CronJob('* * * * * *', async function() {
-    //     console.log("Granting points to users who've been streaming...");
-    //     var streamAuthorIdsCopy = {...streamAuthorIds};
-    //     streamAuthorIds = {};
+        async function grantStreamPoints () {
+          for (var key of Object.keys(streamAuthorIdsCopy)) {
+            if (streamAuthorIdsCopy[key] === true) {
+              var user = await User.findOne({ discordId: key });
+              if (!user) user = await User.create({ discordId: a, points: 100 });
+              else {
+                user.points = user.points + 100;
+                user.coins = user.coins + 100;
+                await user.save();
+              }
+            }
+          }
+        }
 
-    //     async function grantStreamPoints () {
-    //       for (var key of Object.keys(streamAuthorIdsCopy)) {
-    //         if (streamAuthorIdsCopy[key] === true) {
-    //           var user = await User.findOne({ discordId: key });
-    //           if (!user) user = await User.create({ discordId: a, points: 100 });
-    //           else {
-    //             user.points = user.points + 100;
-    //             user.coins = user.coins + 100;
-    //             await user.save();
-    //           }
-    //         }
-    //       }
-    //     }
+        await grantStreamPoints();
 
-    //     await grantStreamPoints();
-
-    //   }, null, true, 'America/Toronto');
+      }, null, true, 'America/Toronto');
 
       // new CronJob('*/5 * * * * *', async function() {
       //   console.log("Deciding roles based on user db rank...");
@@ -213,7 +227,7 @@ client.login(process.env.DISCORDJS_BOT_TOKEN).then(() => {
 
       // }, null, true, 'America/Toronto');
 
-        new CronJob('0 */5 * * * *', async function() {
+        new CronJob('*/10 * * * * *', async function() {
       console.log("Checking to see if any users have completed all of their quests...");
 
       async function grantAchievementFromQuests () {
