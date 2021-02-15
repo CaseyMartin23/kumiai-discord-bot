@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 
 const Achievement = require('./models/Achievement');
 const QuestTemplate = require('./models/QuestTemplate');
+const Admin = require('./models/Admin');
 
 mongoose.connect('mongodb+srv://tysin:tysin@cluster0.dx5ui.mongodb.net/<dbname>?retryWrites=true&w=majority', {
   useNewUrlParser: true,
@@ -14,6 +15,7 @@ mongoose.connect('mongodb+srv://tysin:tysin@cluster0.dx5ui.mongodb.net/<dbname>?
 //read file synchronously (till read completion)
 const achievements = JSON.parse(fs.readFileSync(`${__dirname}/data/a.json`));
 const quests = JSON.parse(fs.readFileSync(`${__dirname}/data/q.json`));
+const admin = JSON.parse(fs.readFileSync(`${__dirname}/data/admin.json`));
 
 const importData = async () => {
   try {
@@ -22,6 +24,10 @@ const importData = async () => {
 
     await QuestTemplate.deleteMany();
     await QuestTemplate.create(quests);
+
+    await Admin.deleteMany();
+    await Admin.create(admin)
+
     console.log('Dummy data created');
     process.exit();
   } catch (err) {

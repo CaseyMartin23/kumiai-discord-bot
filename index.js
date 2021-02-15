@@ -302,10 +302,12 @@ client.login(process.env.DISCORDJS_BOT_TOKEN).then(() => {
 
         for (var u of users) {
           if (u && u.completedQuests && u.completedQuests.length === quests.length) {
+            var hasAchievement = u.completedAchievements.find((a) => a.toString() === achievement.id.toString());
+            if (!hasAchievement) {
             u.completedAchievements = [...u.completedAchievements, achievement.id];
             await u.save();
             console.log(u.id + "has completed all the quests.");
-            // const member = await 
+            }
           }
         }
       }
