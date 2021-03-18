@@ -1,26 +1,8 @@
----------------------------------------
-Quest completion
+This is the kumiai discord bot
 
-- Once user does a questable action, start the UserQuest based on the corresponding system quest.
-- If the system quest doesn't exist, create it. If it exists, update the existing user quest.
-- If the user had not yet hit the successcounter, continue.
-    Else, add quest completion to the user model, delete user quest and dm the user about the completion of their quest.
+To run this project do the following:
+1) Run this in the root directory to install all dependencies: npm install
+2) Run this in the root directory to start up the bot: node index.js
 
----------------------------------------
-
-Tasks for bot
- - Create ranks for users (assign on discord, manage through portal)
- - Chatting on discord award (1-5 pts every mn)
- - Login to the website daily (10 pts)
- - XP multiplier (web portal)
- - Coins and points should be synced (coins can be spent, points can't)
- - Types of quests:
- - Chat for a number of minutes in a specific channel : ip
- - Send a number of images in a specific channel. : ip
- - React a number of times to specific messages: Need more clarification on this
- - Ping a user with a unique message or emoticon : Can't be done through bot
-
-Types of Achievements:
- - All previous types of quest : ip
- - Send specific message to a specific channel : ip
- - Join a vc for the first time : ip
+** Make sure you have the mongoURI, your server id and a bot token in the .env file prior to running the project.
+** Make sure your bot has the required permissions to perform the actions outlined.
