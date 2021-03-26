@@ -3,5 +3,12 @@
         "name": "Image quest",
         "successCounter": 2,
         "type": "image"
+    },
+    {
+        "name": "Message in channel quest",
+        "successCounter": 1,
+        "channelId": "785574082796191784",
+        "message": "You sent a message in this channel",
+        "type": "message-in-channel"
     }
 ]
