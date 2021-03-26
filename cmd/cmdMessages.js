@@ -1,4 +1,4 @@
-const Rank = require("./models/Rank");
+const Rank = require("../models/Rank");
 const { CMDAGRS, CMDNAMES, PREFIX } = require("./cmdKeys");
 
 const handleCmdMessages = async (message) => {

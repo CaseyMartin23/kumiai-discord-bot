@@ -7,8 +7,8 @@ const Achievement = require("./models/Achievement");
 const QuestTemplate = require("./models/QuestTemplate");
 const QuestInProgress = require("./models/QuestInProgress");
 const ConnectMDB = require("./config/db");
-const { PREFIX } = require("./cmdKeys");
-const handleCmdMessages = require("./cmdMessages");
+const { PREFIX } = require("./cmd/cmdKeys");
+const handleCmdMessages = require("./cmd/cmdMessages");
 const client = new Client({
   partials: ["MESSAGE", "REACTION"],
 });
