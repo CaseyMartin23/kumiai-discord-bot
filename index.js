@@ -1,36 +1,20 @@
 require("dotenv").config();
-var CronJob = require("cron").CronJob;
-
 const { Client } = require("discord.js");
-
-const client = new Client({
-  partials: ["MESSAGE", "REACTION"],
-});
-
-const PREFIX = "!";
-
-// mognodb config
-const mongoose = require("mongoose");
-(async function () {
-  try {
-    const conn = await mongoose.connect(process.env.DB_URI, {
-      useUnifiedTopology: true,
-      useNewUrlParser: true,
-      useCreateIndex: true,
-    });
-
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.error(`Error: ${error.message}`);
-    process.exit(1);
-  }
-})();
-
+var CronJob = require("cron").CronJob;
 const Rank = require("./models/Rank");
 const User = require("./models/User");
 const Achievement = require("./models/Achievement");
 const QuestTemplate = require("./models/QuestTemplate");
 const QuestInProgress = require("./models/QuestInProgress");
+const ConnectMDB = require("./config/db");
+const { PREFIX } = require("./cmdKeys");
+const handleCmdMessages = require("./cmdMessages");
+const client = new Client({
+  partials: ["MESSAGE", "REACTION"],
+});
+
+// mognodb config
+ConnectMDB();
 
 client.on("ready", () => {
   console.log(`${client.user.tag} has logged in.`);
@@ -50,75 +34,11 @@ var streamAuthorIds = {};
 var chatInChannel = {};
 
 client.on("message", async (message) => {
+  console.log("message-->", message.content);
   try {
     if (message.author.bot) return;
     if (message.content.startsWith(PREFIX)) {
-      const [CMD_NAME, ...args] = message.content
-        .trim()
-        .substring(PREFIX.length)
-        .split(/\s+/);
-
-      if (CMD_NAME === "rank" && args[0] === "-a") {
-        if (
-          !message.content.includes("r:") ||
-          !message.content.includes("p:") ||
-          !message.content.includes("i:")
-        )
-          return await message.channel.send(
-            `Hmm you don't have everything for me to create a rank.`
-          );
-
-        var rankStartingIndex = message.content.indexOf("r:");
-        var idStartingIndex = message.content.indexOf("i:");
-        var pointsStartingIndex = message.content.indexOf("p:");
-
-        var rankName = message.content
-          .substring(rankStartingIndex, idStartingIndex - 1)
-          .replace(/\s+/g, " ")
-          .trim();
-        var id = message.content
-          .substring(idStartingIndex, pointsStartingIndex - 1)
-          .replace(/\s+/g, " ")
-          .trim();
-        var points = message.content
-          .substring(pointsStartingIndex, message.content.length)
-          .replace(/\s+/g, " ")
-          .trim();
-
-        // remove prefixes
-        rankName = rankName.split("r: ")[1];
-        id = id.split("i: ")[1];
-        points = points.split("p: ")[1];
-
-        // r: rank name
-        // i: id of the role
-        // p: points required
-        console.log(`Rank name: ${rankName}, Id: ${id}, Points: ${points}`);
-
-        var rank = await Rank.findOne({ rankName: rankName });
-        if (rank) {
-          rank.pointsRequired = points;
-          rank.roleId = id;
-          await rank.save();
-          return await message.channel.send(`${rankName} has been updated.`);
-        }
-
-        rank = await Rank.create({
-          rankName: rankName,
-          roleId: id,
-          pointsRequired: points,
-        });
-        return await message.channel.send(`${rankName} has been created.`);
-      } else if (CMD_NAME === "rank" && args[0] === "-r") {
-        var rawRankName = message.content.split(`${PREFIX}rank -r `)[1];
-        var rank = await Rank.findOne({ rankName: rawRankName });
-
-        if (!rank)
-          return await message.channel.send(`That rank doesn't exist.`);
-
-        await rank.remove();
-        return await message.channel.send(`${rawRankName} has been removed.`);
-      }
+      handleCmdMessages(message);
     } else {
       if (
         message.attachments &&
