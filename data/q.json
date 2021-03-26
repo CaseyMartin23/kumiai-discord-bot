@@ -6,9 +6,9 @@
     },
     {
         "name": "Message in channel quest",
-        "successCounter": 1,
+        "successCounter": 3,
         "channelId": "785574082796191784",
-        "message": "You sent a message in this channel",
+        "message": 42,
         "type": "message-in-channel"
     }
 ]

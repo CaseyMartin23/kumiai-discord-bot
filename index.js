@@ -105,14 +105,17 @@ client.on("message", async (message) => {
         if (!quest)
           return console.log("Couldn't find message in channel quest.");
 
-        var messageAtInMinutes = Math.round(
+        let messageAtInMinutes = Math.round(
           message.createdTimestamp / parseInt(quest.message)
         );
-        if (!chatInChannel[userId])
-          chatInChannel[userId] = [messageAtInSeconds];
-        else if (chatInChannel[userId].isArray()) {
+
+        console.log("messageAtInMinutes->", messageAtInMinutes);
+
+        if (!chatInChannel[userId]) {
+          chatInChannel[userId] = [messageAtInMinutes];
+        } else if (Array.isArray(chatInChannel[userId])) {
           // if quest not completed yet
-          var intervalExists = chatInChannel[userId].find(
+          const intervalExists = chatInChannel[userId].find(
             (t) => t === messageAtInMinutes
           );
           if (!intervalExists)
@@ -306,32 +309,32 @@ client.login(process.env.BOT_TOKEN).then(() => {
 
       async function grantAchievementFromQuests() {
         console.log(process.env.GUILD_ID);
-        var achievement = await Achievement.findOne({ type: "all" });
+        const achievement = await Achievement.findOne({ type: "all" });
         if (!achievement)
           return console.log("Couldn't find all quests completed achievement.");
 
-        var quests = await QuestTemplate.find();
+        const quests = await QuestTemplate.find();
         if (!quests || quests.length === 0) return console.log("No quests.");
 
-        var users = await User.find();
+        const users = await User.find();
         if (!users || users.length === 0) return console.log("No users.");
 
-        for (var u of users) {
+        for (let user of users) {
           if (
-            u &&
-            u.completedQuests &&
-            u.completedQuests.length === quests.length
+            user &&
+            user.completedQuests &&
+            user.completedQuests.length === quests.length
           ) {
-            var hasAchievement = u.completedAchievements.find(
+            const hasAchievement = user.completedAchievements.find(
               (a) => a.toString() === achievement.id.toString()
             );
             if (!hasAchievement) {
-              u.completedAchievements = [
-                ...u.completedAchievements,
+              user.completedAchievements = [
+                ...user.completedAchievements,
                 achievement.id,
               ];
-              await u.save();
-              console.log(u.id + "has completed all the quests.");
+              await user.save();
+              console.log(user.id + "has completed all the quests.");
             }
           }
         }
