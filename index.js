@@ -20,11 +20,11 @@ client.on("ready", () => {
   console.log(`${client.user.tag} has logged in.`);
 });
 
-async function createDbUser(userId) {
+const createDbUser = async (userId) => {
   const user = await User.create({ discordId: userId });
   user.completedAchievements = [];
   return user;
-}
+};
 
 // passive points for chatting
 var chatAuthorIds = [];
@@ -34,7 +34,6 @@ var streamAuthorIds = {};
 var chatInChannel = {};
 
 client.on("message", async (message) => {
-  console.log("message-->", message.content);
   try {
     if (message.author.bot) return;
     if (message.content.startsWith(PREFIX)) {

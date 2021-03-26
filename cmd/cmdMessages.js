@@ -7,18 +7,13 @@ const handleCmdMessages = async (message) => {
     .substring(PREFIX.length)
     .split(/\s+/);
 
-  console.log("CMD_NAME-->", CMD_NAME);
-  console.log("args-->", args);
-
   if (CMD_NAME === CMDNAMES.RANK_CMD && args[0] === CMDAGRS.ADD) {
-    console.log("CMD_NAME-->", CMD_NAME);
-    console.log("args-->", args);
     if (
       !message.content.includes(CMDAGRS.RANK_NAME) ||
       !message.content.includes(CMDAGRS.RANK_POINTS) ||
       !message.content.includes(CMDAGRS.RANK_ID)
     ) {
-      return message.reply(
+      return message.channel.send(
         "Hmm you don't have everything for me to create a rank."
       );
     }
@@ -48,10 +43,6 @@ const handleCmdMessages = async (message) => {
     id = id.split(`${CMDAGRS.RANK_ID} `)[1];
     points = points.split(`${CMDAGRS.RANK_POINTS} `)[1];
 
-    console.log("rankName->", rankName);
-    console.log("id->", id);
-    console.log("points->", points);
-
     console.log(`Rank name: ${rankName}, Id: ${id}, Points: ${points}`);
 
     if (!rankName || !id || !points)
@@ -78,7 +69,6 @@ const handleCmdMessages = async (message) => {
     var rawRankName = message.content.split(
       `${PREFIX}${CMDNAMES.RANK_CMD} ${CMDAGRS.REMOVE} `
     )[1];
-    console.log("rawRankName->", rawRankName);
 
     var rank = await Rank.findOne({ rankName: rawRankName });
 
