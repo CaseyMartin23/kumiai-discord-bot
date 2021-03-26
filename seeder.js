@@ -1,11 +1,12 @@
-const fs = require('fs');
-const mongoose = require('mongoose');
+const fs = require("fs");
+const mongoose = require("mongoose");
 
-const Achievement = require('./models/Achievement');
-const QuestTemplate = require('./models/QuestTemplate');
-const Admin = require('./models/Admin');
+const Achievement = require("./models/Achievement");
+const QuestTemplate = require("./models/QuestTemplate");
+const Admin = require("./models/Admin");
 
-mongoose.connect('mongodb+srv://tysin:tysin@cluster0.dx5ui.mongodb.net/<dbname>?retryWrites=true&w=majority', {
+require("dotenv").config();
+mongoose.connect(process.env.DB_URI, {
   useNewUrlParser: true,
   useCreateIndex: true,
   useFindAndModify: true,
@@ -26,15 +27,15 @@ const importData = async () => {
     await QuestTemplate.create(quests);
 
     await Admin.deleteMany();
-    await Admin.create(admin)
+    await Admin.create(admin);
 
-    console.log('Dummy data created');
+    console.log("Dummy data created");
     process.exit();
   } catch (err) {
     console.error(err);
   }
 };
 
-if (process.argv[2] === '-i') {
+if (process.argv[2] === "-i") {
   importData();
 }

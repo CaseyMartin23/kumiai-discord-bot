@@ -1,5 +1,6 @@
 require("dotenv").config();
-const { Client } = require("discord.js");
+const fs = require("fs");
+const { Client, Collection } = require("discord.js");
 var CronJob = require("cron").CronJob;
 const Rank = require("./models/Rank");
 const User = require("./models/User");
@@ -7,14 +8,25 @@ const Achievement = require("./models/Achievement");
 const QuestTemplate = require("./models/QuestTemplate");
 const QuestInProgress = require("./models/QuestInProgress");
 const ConnectMDB = require("./config/db");
-const { PREFIX } = require("./cmd/cmdKeys");
-const handleCmdMessages = require("./cmd/cmdMessages");
+const { PREFIX } = require("./config.json");
+
 const client = new Client({
   partials: ["MESSAGE", "REACTION"],
 });
+client.commands = new Collection();
 
 // mognodb config
 ConnectMDB();
+
+// get available commands
+const commandFiles = fs
+  .readdirSync("./commands")
+  .filter((file) => file.endsWith(".js"));
+
+for (const file of commandFiles) {
+  const command = require(`./commands/${file}`);
+  client.commands.set(command.name, command);
+}
 
 client.on("ready", () => {
   console.log(`${client.user.tag} has logged in.`);
@@ -27,63 +39,86 @@ const createDbUser = async (userId) => {
 };
 
 // passive points for chatting
-var chatAuthorIds = [];
+let chatAuthorIds = [];
 // passive points for streaming
-var streamAuthorIds = {};
+let streamAuthorIds = {};
 // passive recording for chatInChannel quest
-var chatInChannel = {};
+let chatInChannel = {};
 
 client.on("message", async (message) => {
   try {
     if (message.author.bot) return;
     if (message.content.startsWith(PREFIX)) {
-      handleCmdMessages(message);
+      const [command, ...args] = message.content
+        .trim()
+        .substring(PREFIX.length)
+        .split(/\s+/);
+
+      if (!client.commands.has(command)) return;
+      try {
+        client.commands.get(command).execute(message, args);
+      } catch (err) {
+        console.error(err);
+        console.log("error executing said command!");
+      }
     } else {
+      const userId = message.author.id.toString();
+
       if (
         message.attachments &&
         message.attachments.values().next().value !== undefined
       ) {
-        var attachementUrlArr = message.attachments
+        console.log("message-attachments->", message.attachments);
+        console.log("message->", message);
+        const attachementUrlArr = message.attachments
           .values()
           .next()
           .value.attachment.split("/");
-        var attachementType = attachementUrlArr[attachementUrlArr.length - 1];
-        attachementType = attachementType.substr(attachementType.length - 5);
+
+        console.log("attachementUrlArr->", attachementUrlArr);
+
+        let attachementType = attachementUrlArr[attachementUrlArr.length - 1];
+        attachementType = attachementType.split(".")[1];
+
+        console.log("attachementType->", attachementType);
+
         if (
-          !attachementType.includes(".png") &&
-          !attachementType.includes(".jpeg") &&
-          !attachementType.includes(".jpg")
+          !attachementType.includes("png") &&
+          !attachementType.includes("jpeg") &&
+          !attachementType.includes("jpg")
         )
           return;
 
-        var user = await User.findOne({
-          discordId: message.author.id.toString(),
+        let user = await User.findOne({
+          discordId: userId,
         });
-        if (!user) user = await createDbUser(message.author.id.toString());
+        if (!user) user = await createDbUser(userId);
 
-        var questTemplate = await QuestTemplate.findOne({ type: "image" });
-        var questInProgress = await QuestInProgress.findOne({
-          discordId: message.author.id.toString(),
+        let questTemplate = await QuestTemplate.findOne({ type: "image" });
+        let questInProgress = await QuestInProgress.findOne({
+          discordId: userId,
           type: "image",
         });
-        if (!questInProgress)
+        if (!questInProgress) {
           questInProgress = await QuestInProgress.create({
-            discordId: message.author.id.toString(),
+            discordId: userId,
             type: "image",
             counter: 1,
           });
-        else questInProgress.counter = questInProgress.counter + 1;
+        } else questInProgress.counter += 1;
+
         if (questInProgress.counter === questTemplate.successCounter) {
-          await questInProgress.remove();
+          await questInProgress.remove({});
           user.completedQuests = [...user.completedQuests, questTemplate.id];
           await user.save();
 
           const member = await client.guilds.cache
             .get(process.env.GUILD_ID)
             .members.fetch(message);
+
           if (!member)
             return console.log(
-              "Couln't find member for image quest on discord."
+              "Couldn't find member for image quest on discord."
             );
           await member.send(`You've completed the quest ${questTemplate.name}`);
         } else await questInProgress.save();
@@ -101,9 +136,9 @@ client.on("message", async (message) => {
       if (isSpecific) {
         // ACHIEVEMENT: User sends a specific message in a specific channel
         var user = await User.findOne({
-          discordId: message.author.id.toString(),
+          discordId: userId,
         });
-        if (!user) user = await createDbUser(message.author.id.toString());
+        if (!user) user = await createDbUser(userId);
         user.completedAchievements = [
           ...user.completedAchievements,
           isSpecific.id,
@@ -113,7 +148,7 @@ client.on("message", async (message) => {
         await user.save();
         const member = await client.guilds.cache
           .get(process.env.GUILD_ID)
-          .members.fetch(message.author.id.toString());
+          .members.fetch(userId);
         if (!member) return;
         await member.send("Specific channel achievement unlocked.");
       }
@@ -130,27 +165,25 @@ client.on("message", async (message) => {
         var messageAtInMinutes = Math.round(
           message.createdTimestamp / parseInt(quest.message)
         );
-        if (!chatInChannel[message.author.id.toString()])
-          chatInChannel[message.author.id.toString()] = [messageAtInSeconds];
-        else if (chatInChannel[message.author.id.toString()].isArray()) {
+        if (!chatInChannel[userId])
+          chatInChannel[userId] = [messageAtInSeconds];
+        else if (chatInChannel[userId].isArray()) {
           // if quest not completed yet
-          var intervalExists = chatInChannel[message.author.id.toString()].find(
+          var intervalExists = chatInChannel[userId].find(
             (t) => t === messageAtInMinutes
           );
           if (!intervalExists)
-            chatInChannel[message.author.id.toString()] = [
-              ...chatInChannel[message.author.id.toString()],
+            chatInChannel[userId] = [
+              ...chatInChannel[userId],
               messageAtInMinutes,
             ];
         }
       }
 
       // add author id to array here for passive points (every min)
-      var authorExists = chatAuthorIds.find(
-        (a) => a === message.author.id.toString()
-      );
+      var authorExists = chatAuthorIds.find((a) => a === userId);
       if (authorExists) return;
-      return chatAuthorIds.push(message.author.id.toString());
+      return chatAuthorIds.push(userId);
     }
   } catch (err) {
     console.log(err.message);
