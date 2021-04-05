@@ -53,9 +53,9 @@ let streamAuthorIds = {};
 
 client.on("message", messageHandler);
 
-if (!client._events.messageReactionAdd) {
-  client.on("messageReactionAdd", reactionHandler);
-}
+// if (!client._events.messageReactionAdd) {
+//   client.on("messageReactionAdd", reactionHandler);
+// }
 
 client.on("raw", async (packet) => {
   if (packet.t === "VOICE_STATE_UPDATE") {
