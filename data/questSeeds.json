@@ -1,0 +1,29 @@
+[
+    {
+        "name": "Send images in a channel",
+        "successCounter": 2,
+        "channelId": "785574082796191784",
+        "type": "image",
+        "points": 5
+    },
+    {
+        "name": "chat in a channel!",
+        "successCounter": 60,
+        "type": "message",
+        "points": 5
+    },
+    {
+        "name": "chat in a specific channel!",
+        "successCounter": 60,
+        "channelId": "785574082796191784",
+        "type": "specific-message",
+        "points": 5
+    },
+    {
+        "name": "react with thumbsup to any message",
+        "reactionName": "👍",
+        "successCounter": 1,
+        "type": "reaction",
+        "points": 5
+    }
+]

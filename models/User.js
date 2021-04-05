@@ -6,28 +6,31 @@ const User = new mongoose.Schema({
   },
   points: {
     type: Number,
-    default: 0
+    default: 0,
   },
   coins: {
     type: Number,
-    default: 0
+    default: 0,
   },
   completedQuests: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'QuestTemplate',
-    }
+      ref: "QuestTemplate",
+    },
   ],
   completedAchievements: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Achievement',
-    }
+      ref: "Achievement",
+    },
   ],
+  rankId: {
+    type: mongoose.Schema.Types.ObjectId,
+  },
   created: {
     type: Date,
     default: Date.now,
   },
 });
 
-module.exports = mongoose.model('User', User);
+module.exports = mongoose.model("User", User);

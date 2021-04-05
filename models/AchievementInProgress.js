@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 
-const QuestInProgress = new mongoose.Schema({
+const AchievementInProgress = new mongoose.Schema({
   discordId: {
     type: String,
   },
-  questId: {
+  achievementId: {
     type: String,
   },
   type: {
@@ -18,4 +18,4 @@ const QuestInProgress = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("QuestInProgress", QuestInProgress);
+module.exports = mongoose.model("AchievementInProgress", AchievementInProgress);

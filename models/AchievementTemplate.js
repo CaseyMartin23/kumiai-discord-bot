@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const QuestTemplate = new mongoose.Schema({
+const AchievementTemplate = new mongoose.Schema({
   name: {
     type: String,
   },
@@ -27,4 +27,4 @@ const QuestTemplate = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("QuestTemplate", QuestTemplate);
+module.exports = mongoose.model("AchievementTemplate", AchievementTemplate);

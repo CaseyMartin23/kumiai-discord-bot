@@ -1,0 +1,37 @@
+[
+    {
+        "rankName": "Random-kun",
+        "pointsRequired": 0,
+        "maxPoints": 99,
+        "roleId": "YumYum"
+    },
+    {
+        "rankName": "Regular Student",
+        "pointsRequired": 100,
+        "maxPoints": 2999,
+        "roleId": "YumYum"
+    },
+    {
+        "rankName": "Kōhai",
+        "pointsRequired": 3000,
+        "maxPoints": 9999,
+        "roleId": "YumYum"
+    },
+    {
+        "rankName": "Shujinkō",
+        "pointsRequired": 10000,
+        "maxPoints": 24999,
+        "roleId": "YumYum"
+    },
+    {
+        "rankName": "Senpai",
+        "pointsRequired": 25000,
+        "maxPoints": 49999,
+        "roleId": "YumYum"
+    },
+    {
+        "rankName": "Sensei",
+        "pointsRequired": 50000,
+        "roleId": "YumYum"
+    }
+]

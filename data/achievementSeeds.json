@@ -1,0 +1,34 @@
+[
+    {
+        "name": "joned voice channel",
+        "type": "voice-chat",
+        "points": 30
+    },
+    {
+        "name": "send messages in a channel",
+        "type": "message",
+        "successCounter": 120,
+        "points": 30
+    },
+    {
+        "name": "sent messages in a specific channel",
+        "type": "specific-message",
+        "channelId": "785574082796191784",
+        "successCounter": 120,
+        "points": 30
+    },
+    {
+        "name": "send images in specific channel",
+        "type": "image",
+        "channelId": "785574082796191784",
+        "points": 30,
+        "successCounter": 5
+    },
+    {
+        "name": "react a number of times with watermelon to any message",
+        "reactionName": "🍉",
+        "type": "reaction",
+        "points": 30,
+        "successCounter": 5
+    }
+]

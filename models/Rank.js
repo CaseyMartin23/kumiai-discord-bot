@@ -7,9 +7,12 @@ const Rank = new mongoose.Schema({
   pointsRequired: {
     type: Number,
   },
+  maxPoints: {
+    type: Number,
+  },
   roleId: {
     type: String,
-  }
+  },
 });
 
-module.exports = mongoose.model('Rank', Rank);
+module.exports = mongoose.model("Rank", Rank);
