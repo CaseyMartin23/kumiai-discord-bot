@@ -42,6 +42,7 @@ module.exports = async (reaction, userThatReacted) => {
       questId: reactionQuest.id,
       type: rewardSysTypes.reaction,
     });
+
     if (!reactQuestInProgress) {
       reactQuestInProgress = await QuestInProgress.create({
         discordId: userId,
@@ -90,11 +91,14 @@ module.exports = async (reaction, userThatReacted) => {
       achievementId: reactionAchievement.id,
       type: rewardSysTypes.reaction,
     });
+
     console.log("reactAchievementInProgress->", reactAchievementInProgress);
+
     if (!reactAchievementInProgress) {
       console.log("creating new achievement progress...");
       console.log("achievement-id->", reactionAchievement.id);
       console.log("userId->", userId);
+
       reactAchievementInProgress = await AchievementInProgress.create({
         achievementId: reactionAchievement.id,
         discordId: userId,
